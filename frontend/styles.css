@@ -1,0 +1,45 @@
+/* Override Bootstrap accordion toggle arrow color for dark theme */
+.accordion-button::after {
+  filter: invert(1);
+}
+
+/* Sidebar list items as clickable rows */
+#friends-list .list-group-item,
+#chats-list .list-group-item {
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+#friends-list .list-group-item:hover,
+#chats-list .list-group-item:hover {
+  background-color: #343a40 !important;
+}
+
+/* Scrollbar subtle styling */
+#messages-container::-webkit-scrollbar,
+#sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+#messages-container::-webkit-scrollbar-thumb,
+#sidebar::-webkit-scrollbar-thumb {
+  background: #495057;
+  border-radius: 2px;
+}
+
+/* Message bubbles */
+.msg-bubble {
+  max-width: 70%;
+  word-break: break-word;
+}
+.msg-bubble.own {
+  align-self: flex-end;
+  background-color: #0d6efd33;
+  border: 1px solid #0d6efd88;
+  color: #cfe2ff;
+}
+.msg-bubble.other {
+  align-self: flex-start;
+  background-color: #19873033;
+  border: 1px solid #19873088;
+  color: #d1e7dd;
+}

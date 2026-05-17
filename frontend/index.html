@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TP Chat</title>
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+  />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+</head>
+<body class="bg-dark text-light">
+
+  <!-- ========================================================
+       AUTH SCREEN (visible when not logged in)
+       ======================================================== -->
+  <div id="auth-screen" class="d-flex align-items-center justify-content-center vh-100">
+    <div class="card bg-secondary text-light shadow-lg" style="width: 380px;">
+      <div class="card-body p-4">
+        <h4 class="card-title text-center mb-4">TP Chat</h4>
+
+        <!-- Tab selector -->
+        <ul class="nav nav-tabs mb-3" id="auth-tabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link active text-light"
+              id="tab-login-btn"
+              data-bs-toggle="tab"
+              data-bs-target="#tab-login"
+              type="button"
+            >Iniciar sesión</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link text-light"
+              id="tab-register-btn"
+              data-bs-toggle="tab"
+              data-bs-target="#tab-register"
+              type="button"
+            >Registrarse</button>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          <!-- LOGIN -->
+          <div class="tab-pane fade show active" id="tab-login">
+            <form id="login-form" novalidate>
+              <div class="mb-3">
+                <label for="login-email" class="form-label">Email</label>
+                <input
+                  type="email"
+                  class="form-control bg-dark text-light border-secondary"
+                  id="login-email"
+                  placeholder="tu@email.com"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label for="login-password" class="form-label">Contraseña</label>
+                <input
+                  type="password"
+                  class="form-control bg-dark text-light border-secondary"
+                  id="login-password"
+                  required
+                />
+              </div>
+              <div id="login-error" class="alert alert-danger d-none py-2" role="alert"></div>
+              <button type="submit" class="btn btn-primary w-100">Entrar</button>
+            </form>
+          </div>
+
+          <!-- REGISTER -->
+          <div class="tab-pane fade" id="tab-register">
+            <!-- Step 1: datos + captcha -->
+            <div id="register-step-1">
+              <form id="register-form" novalidate>
+                <div class="mb-3">
+                  <label for="reg-username" class="form-label">Username</label>
+                  <input
+                    type="text"
+                    class="form-control bg-dark text-light border-secondary"
+                    id="reg-username"
+                    placeholder="juanito"
+                    required
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="reg-email" class="form-label">Email</label>
+                  <input
+                    type="email"
+                    class="form-control bg-dark text-light border-secondary"
+                    id="reg-email"
+                    placeholder="tu@email.com"
+                    required
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="reg-password" class="form-label">Contraseña</label>
+                  <input
+                    type="password"
+                    class="form-control bg-dark text-light border-secondary"
+                    id="reg-password"
+                    required
+                  />
+                </div>
+                <div class="mb-3 d-flex justify-content-center">
+                  <div class="cf-turnstile"
+                       data-sitekey="1x00000000000000000000AA"
+                       data-theme="dark"></div>
+                </div>
+                <div id="register-error" class="alert alert-danger d-none py-2" role="alert"></div>
+                <button type="submit" class="btn btn-success w-100">Enviar código al email</button>
+              </form>
+            </div>
+
+            <!-- Step 2: verificar código -->
+            <div id="register-step-2" class="d-none">
+              <p class="text-muted small">Ingresá el código de 6 dígitos que enviamos a tu email.</p>
+              <form id="verify-form" novalidate>
+                <div class="mb-3">
+                  <label for="verify-code" class="form-label">Código</label>
+                  <input
+                    type="text"
+                    class="form-control bg-dark text-light border-secondary text-center"
+                    id="verify-code"
+                    maxlength="6"
+                    placeholder="123456"
+                    required
+                  />
+                </div>
+                <div id="verify-error" class="alert alert-danger d-none py-2" role="alert"></div>
+                <button type="submit" class="btn btn-success w-100">Verificar</button>
+                <button type="button" id="back-to-register" class="btn btn-link text-light w-100 mt-1">
+                  Volver
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       CHAT SCREEN (hidden until logged in)
+       ======================================================== -->
+  <div id="chat-screen" class="d-none vh-100 d-flex flex-row">
+
+    <!-- SIDEBAR — 20% width -->
+    <aside
+      id="sidebar"
+      class="d-flex flex-column bg-secondary border-end border-dark"
+      style="width: 20%; min-width: 200px;"
+    >
+      <!-- Username header -->
+      <div class="px-3 py-3 border-bottom border-dark">
+        <span class="fw-bold" id="sidebar-username">@usuario</span>
+        <button
+          id="logout-btn"
+          class="btn btn-sm btn-outline-light float-end"
+          title="Cerrar sesión"
+        >&#x2192;</button>
+      </div>
+
+      <!-- Collapsibles -->
+      <div class="accordion accordion-flush flex-grow-1 overflow-auto" id="sidebar-accordion">
+
+        <!-- AMIGOS -->
+        <div class="accordion-item bg-secondary border-dark">
+          <h2 class="accordion-header">
+            <button
+              class="accordion-button collapsed bg-dark text-light border-0"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#collapse-friends"
+              aria-expanded="false"
+            >
+              Amigos
+            </button>
+          </h2>
+          <div id="collapse-friends" class="accordion-collapse collapse">
+            <div class="accordion-body p-0">
+              <ul id="friends-list" class="list-group list-group-flush">
+                <!-- Populated by sidebar.render.js -->
+                <li class="list-group-item bg-secondary text-light text-muted small px-3 py-2">
+                  Sin amigos aún.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- CHATS -->
+        <div class="accordion-item bg-secondary border-dark">
+          <h2 class="accordion-header">
+            <button
+              class="accordion-button collapsed bg-dark text-light border-0"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#collapse-chats"
+              aria-expanded="false"
+            >
+              Chats
+            </button>
+          </h2>
+          <div id="collapse-chats" class="accordion-collapse collapse">
+            <div class="accordion-body p-0">
+              <ul id="chats-list" class="list-group list-group-flush">
+                <!-- Populated by sidebar.render.js -->
+                <li class="list-group-item bg-secondary text-light text-muted small px-3 py-2">
+                  Sin chats aún.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- CHAT AREA — remaining width -->
+    <main class="d-flex flex-column flex-grow-1 bg-dark">
+
+      <!-- Chat header -->
+      <div id="chat-header" class="px-4 py-3 border-bottom border-secondary d-flex align-items-center">
+        <span id="chat-title" class="fw-semibold text-muted">Seleccioná un chat</span>
+      </div>
+
+      <!-- Messages -->
+      <div
+        id="messages-container"
+        class="flex-grow-1 overflow-auto p-3 d-flex flex-column gap-2"
+      >
+        <!-- Messages rendered here by chat.render.js -->
+      </div>
+
+      <!-- Input -->
+      <div class="p-3 border-top border-secondary">
+        <form id="message-form" class="d-flex gap-2">
+          <input
+            type="text"
+            id="message-input"
+            class="form-control bg-secondary text-light border-dark"
+            placeholder="Escribí un mensaje..."
+            autocomplete="off"
+            disabled
+          />
+          <button type="submit" class="btn btn-primary" id="send-btn" disabled>
+            Enviar
+          </button>
+        </form>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module">
+    import { initAuth } from './src/render/auth.render.js';
+    import { initSidebar } from './src/render/sidebar.render.js';
+    import { initChat } from './src/render/chat.render.js';
+
+    initAuth();
+    initSidebar();
+    initChat();
+  </script>
+</body>
+</html>
