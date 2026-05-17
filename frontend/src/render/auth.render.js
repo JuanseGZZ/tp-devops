@@ -14,7 +14,8 @@ const registerError = document.getElementById('register-error');
 const verifyError   = document.getElementById('verify-error');
 const logoutBtn     = document.getElementById('logout-btn');
 const backBtn       = document.getElementById('back-to-register');
-const resendBtn     = document.getElementById('resend-code-btn');
+const resendBtn        = document.getElementById('resend-code-btn');
+const resendFromLogin  = document.getElementById('resend-from-login-btn');
 
 let pendingEmail = '';
 
@@ -28,6 +29,18 @@ export function initAuth() {
   }
 
   loginForm.addEventListener('submit', handleLogin);
+  resendFromLogin.addEventListener('click', async () => {
+    const email = document.getElementById('login-email').value.trim();
+    if (!email) return;
+    try {
+      await authApi.resendVerification(email);
+      showError(loginError, 'Código reenviado. Revisá tu email.');
+      loginError.classList.replace('alert-danger', 'alert-success');
+      resendFromLogin.classList.add('d-none');
+    } catch (err) {
+      showError(loginError, err.message || 'Error al reenviar.');
+    }
+  });
   registerForm.addEventListener('submit', handleRegister);
   verifyForm.addEventListener('submit', handleVerify);
   logoutBtn.addEventListener('click', handleLogout);
@@ -64,6 +77,9 @@ async function handleLogin(e) {
     loginForm.reset();
   } catch (err) {
     showError(loginError, err.message || 'Error al iniciar sesión.');
+    if (err.status === 403 || (err.message && err.message.includes('Verificá'))) {
+      resendFromLogin.classList.remove('d-none');
+    }
   }
 }
 
