@@ -30,6 +30,16 @@ export async function login(payload) {
   return res.json();
 }
 
+export async function resendVerification(email) {
+  const res = await fetch(`${BASE}/resend-verification`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
 export async function logout() {
   await fetch(`${BASE}/logout`, { method: 'POST' });
 }

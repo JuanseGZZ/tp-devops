@@ -14,6 +14,7 @@ const registerError = document.getElementById('register-error');
 const verifyError   = document.getElementById('verify-error');
 const logoutBtn     = document.getElementById('logout-btn');
 const backBtn       = document.getElementById('back-to-register');
+const resendBtn     = document.getElementById('resend-code-btn');
 
 let pendingEmail = '';
 
@@ -33,6 +34,17 @@ export function initAuth() {
   backBtn.addEventListener('click', () => {
     registerStep2.classList.add('d-none');
     registerStep1.classList.remove('d-none');
+  });
+
+  resendBtn.addEventListener('click', async () => {
+    clearError(verifyError);
+    try {
+      await authApi.resendVerification(pendingEmail);
+      showError(verifyError, 'Código reenviado. Revisá tu email.');
+      verifyError.classList.replace('alert-danger', 'alert-success');
+    } catch (err) {
+      showError(verifyError, err.message || 'Error al reenviar.');
+    }
   });
 
   EventBus.on(EVENTS.LOGGED_OUT, showAuthScreen);

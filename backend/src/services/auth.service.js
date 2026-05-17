@@ -47,6 +47,17 @@ class AuthService {
     await chatRepository.addMember(GLOBAL_CHAT_ID, user.id);
   }
 
+  async resendVerification({ email }) {
+    const user = await userRepository.findByEmail(email);
+    if (!user) throw { status: 404, message: 'Email no encontrado.' };
+    if (user.emailVerified) throw { status: 400, message: 'El email ya fue verificado.' };
+
+    const code = this._generateCode();
+    const expiresAt = new Date(Date.now() + CODE_TTL_MINUTES * 60 * 1000);
+    await userRepository.setVerificationCode(user.id, code, expiresAt);
+    await emailService.sendVerificationCode(email, code);
+  }
+
   async login({ email, password }) {
     const user = await userRepository.findByEmail(email);
     if (!user) throw { status: 401, message: 'Credenciales inválidas.' };

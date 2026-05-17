@@ -39,6 +39,18 @@ router.post('/verify-email', async (req, res) => {
   }
 });
 
+// POST /api/auth/resend-verification
+router.post('/resend-verification', emailLimiter, async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ message: 'email es requerido.' });
+  try {
+    await authService.resendVerification({ email });
+    res.status(200).json({ message: 'Código reenviado al email.' });
+  } catch (err) {
+    handleError(res, err);
+  }
+});
+
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
