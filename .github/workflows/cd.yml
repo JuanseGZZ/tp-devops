@@ -33,15 +33,8 @@ jobs:
 
       - name: Deploy backend to Render (imagen versionada por SHA)
         run: |
-          echo "=== PATCH image URL ==="
-          curl -f -X PATCH \
-            "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID_BACKEND }}" \
-            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
-            -H "Content-Type: application/json" \
-            -d "{\"image\": {\"imagePath\": \"docker.io/${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-backend:${{ github.sha }}\"}}"
-          echo "=== POST deploy ==="
           curl -f -X POST \
             "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID_BACKEND }}/deploys" \
             -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
             -H "Content-Type: application/json" \
-            -d "{}"
+            -d "{\"imageUrl\": \"docker.io/${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-backend:${{ github.sha }}\"}"
