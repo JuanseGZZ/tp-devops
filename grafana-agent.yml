@@ -12,6 +12,8 @@ metrics:
             - targets: ['backend:3000']
               labels:
                 service: backend
+          authorization:
+            credentials: ${METRICS_TOKEN}
       remote_write:
         - url: ${GRAFANA_CLOUD_PROM_URL}
           basic_auth:

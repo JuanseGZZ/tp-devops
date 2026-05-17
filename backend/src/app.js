@@ -22,6 +22,13 @@ app.use(metricsMiddleware);
 app.use('/api', routes);
 
 app.get('/metrics', async (req, res) => {
+  const token = process.env.METRICS_TOKEN;
+  if (token) {
+    const auth = req.headers['authorization'];
+    if (auth !== `Bearer ${token}`) {
+      return res.status(401).end('Unauthorized');
+    }
+  }
   res.set('Content-Type', registry.contentType);
   res.end(await registry.metrics());
 });
