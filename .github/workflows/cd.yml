@@ -22,18 +22,14 @@ jobs:
         with:
           context: ./backend
           push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-backend:${{ github.sha }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-backend:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-backend:${{ github.sha }}
 
       - name: Build and push frontend
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
           push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-frontend:${{ github.sha }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-frontend:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-frontend:${{ github.sha }}
 
       - name: Deploy backend to Render
         run: |
