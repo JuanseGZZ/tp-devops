@@ -34,9 +34,13 @@ export function initAuth() {
     if (!email) return;
     try {
       await authApi.resendVerification(email);
-      showError(loginError, 'Código reenviado. Revisá tu email.');
-      loginError.classList.replace('alert-danger', 'alert-success');
+      pendingEmail = email;
       resendFromLogin.classList.add('d-none');
+      clearError(loginError);
+      // Ir al paso 2 de verificación
+      document.getElementById('tab-register-btn').click();
+      registerStep1.classList.add('d-none');
+      registerStep2.classList.remove('d-none');
     } catch (err) {
       showError(loginError, err.message || 'Error al reenviar.');
     }
