@@ -20,5 +20,6 @@ ENV NODE_ENV=production
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/src ./src
 COPY package.json ./
+COPY migrations ./migrations
 EXPOSE 3000
 CMD ["node", "--require", "./src/tracing.js", "src/app.js"]
