@@ -29,5 +29,17 @@ module.exports = app;
 
 if (require.main === module) {
   const port = process.env.PORT || 3000;
-  app.listen(port, () => console.log(`Server running on port ${port}`));
+  const fs = require('fs');
+  const path = require('path');
+  const pool = require('./config/db');
+
+  pool.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='users')")
+    .then(({ rows }) => {
+      if (!rows[0].exists) {
+        const sql = fs.readFileSync(path.join(__dirname, '../migrations/001_init.sql'), 'utf8');
+        return pool.query(sql).then(() => console.log('Migration OK'));
+      }
+    })
+    .then(() => app.listen(port, () => console.log(`Server running on port ${port}`)))
+    .catch(err => { console.error('Startup error:', err); process.exit(1); });
 }
