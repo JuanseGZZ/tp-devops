@@ -1,17 +1,13 @@
-const nodemailer = require('nodemailer');
+const { MailtrapClient } = require('mailtrap');
 const env = require('../config/env');
 
-const transporter = nodemailer.createTransport({
-  host: env.smtp.host,
-  port: env.smtp.port,
-  auth: { user: env.smtp.user, pass: env.smtp.pass },
-});
+const client = new MailtrapClient({ token: env.smtp.pass });
 
 class EmailService {
   async sendVerificationCode(to, code) {
-    await transporter.sendMail({
-      from: env.smtp.from,
-      to,
+    await client.send({
+      from: { email: 'hello@demomailtrap.co', name: 'TP Chat' },
+      to: [{ email: to }],
       subject: 'Tu código de verificación',
       text: `Tu código es: ${code}`,
       html: `<p>Tu código es: <strong>${code}</strong></p>`,
