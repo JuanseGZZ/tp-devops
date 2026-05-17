@@ -21,4 +21,4 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/src ./src
 COPY package.json ./
 EXPOSE 3000
-CMD ["node", "src/app.js"]
+CMD ["node", "--require", "./src/tracing.js", "src/app.js"]

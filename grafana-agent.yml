@@ -1,0 +1,34 @@
+server:
+  log_level: info
+
+metrics:
+  global:
+    scrape_interval: 15s
+  configs:
+    - name: tp-devops
+      scrape_configs:
+        - job_name: tp-devops-backend
+          static_configs:
+            - targets: ['backend:3000']
+              labels:
+                service: backend
+      remote_write:
+        - url: ${GRAFANA_CLOUD_PROM_URL}
+          basic_auth:
+            username: ${GRAFANA_CLOUD_PROM_USER}
+            password: ${GRAFANA_CLOUD_API_KEY}
+
+traces:
+  configs:
+    - name: tp-devops
+      receivers:
+        otlp:
+          protocols:
+            http:
+              endpoint: 0.0.0.0:4318
+      remote_write:
+        - endpoint: ${GRAFANA_CLOUD_TEMPO_ENDPOINT}
+          basic_auth:
+            username: ${GRAFANA_CLOUD_TEMPO_USER}
+            password: ${GRAFANA_CLOUD_API_KEY}
+          insecure: false

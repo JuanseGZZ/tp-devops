@@ -186,33 +186,63 @@
 - [x] `docker compose up` — los 3 contenedores up, API y frontend verificados
 
 ### GitHub
-- [ ] Crear repo en GitHub
-- [ ] Pushear código base
-- [ ] Configurar rama `main` como protegida (requerir checks antes de merge)
+- [x] Crear repo en GitHub (`JuanseGZZ/tp-devops`)
+- [x] Pushear código base
+- [ ] Configurar rama `main` como protegida (Settings → Branches → Add rule → require status checks: `test` y `build`)
 
 ### CI — GitHub Actions
-- [ ] Workflow `ci.yml`: trigger en PR a `main`
-  - [ ] Step: `npm ci`
-  - [ ] Step: `npm test`
-  - [ ] Step: `docker build` (verifica que la imagen compila)
-- [ ] El merge a `main` bloqueado si CI falla
+- [x] Workflow `ci.yml`: trigger en PR a `main`
+  - [x] Step: `npm ci`
+  - [x] Step: `npm test`
+  - [x] Step: `docker compose build` (verifica que las imágenes compilan)
+- [ ] El merge a `main` bloqueado si CI falla (branch protection + required checks)
 
 ### CD — GitHub Actions
-- [ ] Workflow `cd.yml`: trigger en push a `main`
-  - [ ] Build imagen Docker del backend
-  - [ ] Push a Docker Hub (o GitHub Container Registry)
-  - [ ] (Opcional) Deploy automático a Render via webhook
+- [x] Workflow `cd.yml`: trigger en push a `main`
+  - [x] Build backend con tag `${{ github.sha }}` + `latest` → push a Docker Hub
+  - [x] Build frontend con tag `${{ github.sha }}` + `latest` → push a Docker Hub
+  - [x] Trigger deploy en Render via deploy hook (`curl POST RENDER_DEPLOY_HOOK_BACKEND`)
+
+### Secrets a configurar en GitHub (Settings → Secrets → Actions)
+- [ ] `DOCKERHUB_USERNAME` — tu usuario de Docker Hub
+- [ ] `DOCKERHUB_TOKEN` — Access Token de Docker Hub (no la password)
+- [ ] `JWT_SECRET` — string largo y aleatorio
+- [ ] `RENDER_DEPLOY_HOOK_BACKEND` — URL del deploy hook del servicio backend en Render
+- [ ] `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`
+- [ ] `TURNSTILE_SECRET` (clave real de producción)
+
+### Render — Deploy
+- [ ] Crear cuenta en render.com
+- [ ] Crear PostgreSQL Database en Render
+- [ ] Crear Web Service backend: Docker → `tuuser/tp-devops-backend:latest`, puerto 3000
+- [ ] Crear Web Service frontend: Docker → `tuuser/tp-devops-frontend:latest`, puerto 80, env `BACKEND_URL=https://<backend>.onrender.com`
+- [ ] Configurar todas las env vars del backend en el dashboard de Render
+- [ ] Copiar la Deploy Hook URL del backend → guardar como secret `RENDER_DEPLOY_HOOK_BACKEND` en GitHub
 
 ---
 
-## Phase 8 — Monitoreo
+## Phase 8 — Monitoreo (Grafana Cloud)
 
-- [ ] Elegir herramienta: Datadog / Sentry / Grafana Cloud
-- [ ] Agregar middleware de logging en Express: método, ruta, status, latencia
-- [ ] Configurar el agente/SDK de la herramienta elegida en el backend
-- [ ] Dashboard: request rate (hits), error rate, latencia p95
-- [ ] APM / trazas: ver el tiempo en cada capa (route → service → db)
-- [ ] Conectar Compose para que el agente de monitoreo corra como sidecar o env var
+### Métricas (prom-client)
+- [x] Middleware `metrics.middleware.js` — counter `http_requests_total` + histogram `http_request_duration_ms`
+- [x] Endpoint `/metrics` en Express (formato Prometheus)
+- [x] Grafana Agent en `docker-compose.yml` (profile `monitoring`) — scrape `/metrics` + push a Grafana Cloud
+
+### Logging estructurado
+- [x] Middleware de logging JSON en `app.js` — method, path, status, ms
+
+### APM / Trazas (OpenTelemetry)
+- [x] `tracing.js` con OpenTelemetry SDK — instrumenta Express + pg + HTTP
+- [x] Exportador OTLP HTTP — envía a Grafana Cloud Tempo (o agent local)
+- [x] `backend/Dockerfile` usa `--require ./src/tracing.js` para activar antes de app
+
+### Configuración Grafana Cloud
+- [ ] Crear cuenta gratuita en grafana.com
+- [ ] Obtener credenciales: Prometheus push URL + Tempo endpoint + API key
+- [ ] Completar `.env` con variables `GRAFANA_CLOUD_*`
+- [ ] Levantar monitoring: `docker compose --profile monitoring up`
+- [ ] En Grafana Cloud: importar dashboard con métricas `http_requests_total`, `http_request_duration_ms`
+- [ ] Verificar trazas en Grafana → Explore → Tempo
 
 ---
 

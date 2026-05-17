@@ -10,6 +10,7 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
       - ./backend/migrations/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+    # Puerto 5432 solo para desarrollo local con pgAdmin — comentar en producción
     ports:
       - "5432:5432"
     healthcheck:
@@ -45,6 +46,10 @@ services:
       RATE_LIMIT_MAX: 60
       EMAIL_RATE_LIMIT_PER_IP_PER_DAY: 3
       TURNSTILE_SECRET: ${TURNSTILE_SECRET:-1x0000000000000000000000000000000AA}
+      # OpenTelemetry — vacío deshabilita el tracing. Para monitoreo local apuntar a grafana-agent:
+      # OTEL_EXPORTER_OTLP_ENDPOINT=http://grafana-agent:4318
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      OTEL_EXPORTER_OTLP_HEADERS: ${OTEL_EXPORTER_OTLP_HEADERS:-}
     depends_on:
       db:
         condition: service_healthy
@@ -65,6 +70,27 @@ services:
       - backend
     networks:
       - internal
+
+  # Grafana Agent — activo solo con: docker compose --profile monitoring up
+  # Requiere variables GRAFANA_CLOUD_* en el .env raíz
+  grafana-agent:
+    image: grafana/agent:v0.40.0
+    restart: unless-stopped
+    volumes:
+      - ./grafana-agent.yml:/etc/agent/config.yml
+    command: ["-config.file=/etc/agent/config.yml", "-config.expand-env=true"]
+    environment:
+      GRAFANA_CLOUD_PROM_URL: ${GRAFANA_CLOUD_PROM_URL:-}
+      GRAFANA_CLOUD_PROM_USER: ${GRAFANA_CLOUD_PROM_USER:-}
+      GRAFANA_CLOUD_TEMPO_ENDPOINT: ${GRAFANA_CLOUD_TEMPO_ENDPOINT:-}
+      GRAFANA_CLOUD_TEMPO_USER: ${GRAFANA_CLOUD_TEMPO_USER:-}
+      GRAFANA_CLOUD_API_KEY: ${GRAFANA_CLOUD_API_KEY:-}
+    networks:
+      - internal
+    depends_on:
+      - backend
+    profiles:
+      - monitoring
 
 networks:
   internal:

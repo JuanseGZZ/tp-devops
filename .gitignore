@@ -10,6 +10,7 @@ node_modules/
 .env.*
 # Los .env.example SÍ se commitean (son templates para el equipo)
 .env.example
+!.env.example
 !backend/.env.example
 
 # ─── Logs ────────────────────────────────────────────────────────────────────
