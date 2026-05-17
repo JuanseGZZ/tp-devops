@@ -22,14 +22,18 @@ jobs:
         with:
           context: ./backend
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-backend:latest
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-backend:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-backend:latest
 
       - name: Build and push frontend
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-frontend:latest
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-frontend:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-frontend:latest
 
       - name: Deploy backend to Render
         run: |
@@ -37,7 +41,7 @@ jobs:
             "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID_BACKEND }}/deploys" \
             -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
             -H "Content-Type: application/json" \
-            -d "{\"imageUrl\": \"docker.io/${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-backend:latest\"}"
+            -d "{\"imageUrl\": \"docker.io/${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-backend:${{ github.sha }}\"}"
 
       - name: Deploy frontend to Render
         run: |
@@ -45,4 +49,4 @@ jobs:
             "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID_FRONTEND }}/deploys" \
             -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
             -H "Content-Type: application/json" \
-            -d "{\"imageUrl\": \"docker.io/${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-frontend:latest\"}"
+            -d "{\"imageUrl\": \"docker.io/${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-frontend:${{ github.sha }}\"}"
