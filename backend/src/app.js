@@ -4,6 +4,7 @@ const { metricsMiddleware, registry } = require('./middleware/metrics.middleware
 const routes = require('./api/index');
 
 const app = express();
+app.set('trust proxy', 1);
 
 app.use((req, res, next) => {
   const start = Date.now();
