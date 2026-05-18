@@ -72,27 +72,6 @@ services:
     networks:
       - internal
 
-  # Grafana Agent — activo solo con: docker compose --profile monitoring up
-  # Requiere variables GRAFANA_CLOUD_* en el .env raíz
-  grafana-agent:
-    image: grafana/agent:v0.40.0
-    restart: unless-stopped
-    volumes:
-      - ./grafana-agent.yml:/etc/agent/config.yml
-    command: ["-config.file=/etc/agent/config.yml", "-config.expand-env=true"]
-    environment:
-      GRAFANA_CLOUD_PROM_URL: ${GRAFANA_CLOUD_PROM_URL:-}
-      GRAFANA_CLOUD_PROM_USER: ${GRAFANA_CLOUD_PROM_USER:-}
-      GRAFANA_CLOUD_TEMPO_ENDPOINT: ${GRAFANA_CLOUD_TEMPO_ENDPOINT:-}
-      GRAFANA_CLOUD_TEMPO_USER: ${GRAFANA_CLOUD_TEMPO_USER:-}
-      GRAFANA_CLOUD_API_KEY: ${GRAFANA_CLOUD_API_KEY:-}
-      METRICS_TOKEN: ${METRICS_TOKEN:-}
-    networks:
-      - internal
-    depends_on:
-      - backend
-    profiles:
-      - monitoring
 
 networks:
   internal:
